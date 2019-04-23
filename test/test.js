@@ -118,35 +118,35 @@ describe("Booking For Rooms (Returns Error)",() => {
         const response = mockRes();
         booking(request, response);
         expect(response.json).to.be.calledWith({
-            error: "Exceed limit of 7 adults per booking"
+            error: ["Exceed limit of 7 adults per booking"]
         });
     });
 
     it("If a child is booking (Unaccompanied Minor Error)",() => {
         req.body = {
             "bookings": {
-                "children": 8,
+                "children": 1,
             }
         };
         const request = mockReq(req);
         const response = mockRes();
         booking(request, response);
         expect(response.json).to.be.calledWith({
-            error: "Exceed limit of 7 adults per booking"
+            error: ["Minor must be accompanied by one adult"]
         });
     });
 
     it("If an infant is booking (Unaccompanied Minor Error)",() => {
         req.body = {
             "bookings": {
-                "children": 8,
+                "infant": 1,
             }
         };
         const request = mockReq(req);
         const response = mockRes();
         booking(request, response);
         expect(response.json).to.be.calledWith({
-            error: "Exceed limit of 7 adults per booking"
+            error: ["Minor must be accompanied by one adult"]
         });
     });
 });

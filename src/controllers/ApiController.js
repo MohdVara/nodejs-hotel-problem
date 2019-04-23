@@ -1,5 +1,5 @@
 import debug from 'debug';
-import { watch } from 'fs';
+import { watch, unwatchFile } from 'fs';
 export function checkLink(req,res,next) {
         res.json({
             message: "API Endpoint"
@@ -16,7 +16,16 @@ export function booking(req,res,next) {
     let addRoom = (room) => {
         resultBooking.booking.rooms.push(room);
     };
+
+    let addGuest = (guest, value) => {
+        if(resultBooking.booking.rooms !== undefined){
+            let currentRoom = resultBooking.booking.rooms[0];
+            currentRoom[guest] = value;
+        }
+    }
+
     addRoom.bind(this);
+    addGuest.bind(this);
 
     let initError = () => {
         resultBooking = {
@@ -84,25 +93,30 @@ export function booking(req,res,next) {
             setResult.bind(this);
             let conditions = roomLimit[guest].condition;
             Object.keys(conditions).map((operation) =>{
+                //setResult("maxParentLimit",JSON.stringify(conditions));
                 if(OPERATION_DEF[0] == operation){
                     setResult("minLimit",conditions[operation]);
                 }else if(OPERATION_DEF[1] == operation){
                     setResult("maxLimit",conditions[operation]);
+                }else if(roomOccupants.includes(operation)){
+                    let guestType = operation;
+                    Object.keys(conditions[guestType]).map((parentOperation)=>{
+                        if(OPERATION_DEF[0] == parentOperation){
+                            setResult("minParentLimit",{ 
+                                occupantType:  guestType,
+                                value: conditions[operation][parentOperation]
+                            });
+                        }else if(OPERATION_DEF[1] == parentOperation){
+                            setResult("maxParentLimit",{
+                                occupantType:  guestType,
+                                value: conditions[operation][parentOperation]
+                            });
+                        }else{
+
+                        }
+                    });
                 }else{
-                    if(operation == "condition"){
-                        parentConditions = operation;
-                        Object.keys(parentConditions).map((operation) =>{
-                            if(OPERATION_DEF[0] == operation){
-                                setResult("minLimit",conditions[operation]);
-                            }else if(OPERATION_DEF[1] == operation){
-                                setResult("maxLimit",conditions[operation]);
-                            }else{
-                                setResult("error","Malformed constraint definition: " + operation);
-                            }
-                        });
-                    }else{
-                        setResult("error","Malformed constraint definition: " + operation);
-                    }
+
                 }
             });
 
@@ -111,57 +125,141 @@ export function booking(req,res,next) {
 
         Object.keys(bookings).map((guest) => {
             let numOfBkRoom = 0;
+            let {
+                minLimit,
+                maxLimit,
+                minParentLimit,
+                maxParentLimit
+            } = initConstraint(guest,roomLimit2);
+            let occupantNum = bookings[guest];
+
+            let checkConstraintForMultipleRooms = (occupantNum) => {
+                let needMultipleRooms = false;
+                let checkParentConstraint = false;
+                let tooMuch = false;
+                let notEnough = false;
+                let tooMuchParent = false;
+                let notEnoughParent = false;
+                let totalParent = 0;
+
+                let addParent = (num) => {
+                    totalParent += num;
+                };
+                addParent.bind(this);
+
+                if(minLimit){
+                    notEnough = occupantNum < minLimit;
+                }
+
+                if(maxLimit){
+                    needMultipleRooms = needMultipleRooms || occupantNum >= maxLimit;
+                }
+
+                if(minParentLimit){
+                    if(resultBooking.booking.rooms.length > 0){
+                        totalParent = resultBooking.booking.rooms.reduce( (prev, room) => {
+                            return prev + room[minParentLimit.occupantType];
+                       },0);
+                       addParent(totalParent);
+                       
+                    }
+                    if(totalParent <= minParentLimit.value){
+                        notEnoughParent = true;
+                    }
+                }
+
+                if(maxParentLimit){ 
+                    if(resultBooking.booking.rooms.length > 0){
+                        totalParent = resultBooking.booking.rooms.reduce( (prev, room) => {
+                            return prev + room[maxParentLimit.occupantType];
+                       },0);
+                       addParent(totalParent);
+                       
+                    }
+                    if(totalParent >= maxParentLimit.value){
+                        tooMuchParent = true;
+                    }
+                }
+
+
+
+                return {
+                    minLimit,
+                    maxLimit,
+                    minParentLimit,
+                    maxParentLimit,
+                    needMultipleRooms,
+                    notEnough,
+                    tooMuch,
+                    notEnoughParent,
+                    tooMuchParent,
+                    roomsBooked,
+                    totalParent
+                };
+            };
+
+            let {
+                needMultipleRooms,
+                notEnough,
+                tooMuch,
+                notEnoughParent,
+                tooMuchParent,
+                roomsBooked,
+                totalParent
+            } = checkConstraintForMultipleRooms(occupantNum);
+
+
             switch(guest){
-                case roomOccupants[0]:
-
-                    let {
-
-                    } = initConstraint(guest,roomLimit2);
-                    let occupantNum = bookings[guest];
-
-                    addRoom();
-
-
-                    /*
-                    if(occupantNum > roomLimit[guest] && 
-                       occupantNum <= bookLimit[guest]){
-
-                        let remainGuestNum = occupantNum % limit;
+                case roomOccupants[0]:                    
+                    if(needMultipleRooms && occupantNum <= bookLimit[guest]){
+                        let remainGuestNum = occupantNum % maxLimit;
                         if(remainGuestNum != 0){
-                            numOfBkRoom = occupantNum / limit;
+                            numOfBkRoom = occupantNum / maxLimit;
                             Array.from({ length: numOfBkRoom }).map(() => {
-                                addRoom({[guest]: limit});
+                                addRoom({[guest]: maxLimit});
                             });
                             addRoom({[guest]: remainGuestNum});
                         }else{
-                            
+                            addRoom({[guest]: occupantNum});
                         }
-
+                    }else if(notEnough){
+                        addError(`Not enought ${guest} guest`);
+                    }else if(tooMuch){
+                        addError(`Too much ${guest}s guest`);
                     }else if(occupantNum > bookLimit[guest]){
-                        addError("Exceed limit of 7 adults per booking");
+                        addError(`Exceed limit of ${bookLimit[guest]} ${guest}s per booking`);
                     }else{
                         addRoom({[guest]: occupantNum });
                     } 
-                    */
                 break;
 
                 case roomOccupants[1]:
-                    switch(true){
-                        /* min */
-                        case regexOpsDef[0].test(bookings[guest]):
-
-                        break;
-
-                        /* max */
-                        case regexOpsDef[1].test(bookings[guest]):
-                        break;
-
-                        /* number */
-                        case /^d/.test(booking[guest]):
-                        break;
-                    }
+                    if(needMultipleRooms){
+                        let remainGuestNum = occupantNum % maxLimit;
+                        if(remainGuestNum != 0){
+                            numOfBkRoom = occupantNum / maxLimit;
+                            Array.from({ length: numOfBkRoom }).map(() => {
+                                addGuest(guest, maxLimit);
+                            });
+                            addGuest(guest, remainGuestNum);
+                        }else{
+                            addGuest(guest, occupantNum);
+                        }
+                    }else if(notEnoughParent){
+                        addError("Minor must be accompanied by one adult");
+                    }else if(tooMuchParent){
+                        addError(`Too much ${minParentLimit.occupantType}s guest`);
+                    }else{
+                        addGuest(guest, occupantNum);
+                    } 
+                
+                    /* TODO: adding children { Algorithm distribute by room } */
+                    
                 break;
                 case roomOccupants[2]:
+                    if(Object.keys(resultBooking.booking.rooms).length < 1){
+                        addError("Minor must be accompanied by one adult");
+                    }
                 break;
                 default:
                 break;
