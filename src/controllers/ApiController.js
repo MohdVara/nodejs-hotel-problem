@@ -1,11 +1,21 @@
-import debug from 'debug';
-import { watch, unwatchFile } from 'fs';
+/**
+ *  API Test EndPoint
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
 export function checkLink(req,res,next) {
         res.json({
             message: "API Endpoint"
         });
 }
 
+/**
+ *  Problem Statement API function
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
 export function booking(req,res,next) {
     let resultBooking = {
         booking: {
@@ -22,7 +32,7 @@ export function booking(req,res,next) {
             let currentRoom = resultBooking.booking.rooms[0];
             currentRoom[guest] = value;
         }
-    }
+    };
 
     addRoom.bind(this);
     addGuest.bind(this);
@@ -93,7 +103,6 @@ export function booking(req,res,next) {
             setResult.bind(this);
             let conditions = roomLimit[guest].condition;
             Object.keys(conditions).map((operation) =>{
-                //setResult("maxParentLimit",JSON.stringify(conditions));
                 if(OPERATION_DEF[0] == operation){
                     setResult("minLimit",conditions[operation]);
                 }else if(OPERATION_DEF[1] == operation){
@@ -220,7 +229,15 @@ export function booking(req,res,next) {
                             });
                             addRoom({[guest]: remainGuestNum});
                         }else{
-                            addRoom({[guest]: occupantNum});
+                            if(occupantNum > maxLimit){
+                                numOfBkRoom = occupantNum / maxLimit;
+                                Array.from({ length: numOfBkRoom }).map(() => {
+                                    addRoom({[guest]: maxLimit});
+                                });
+                            }else{
+                                addRoom({[guest]: occupantNum});
+                            }
+                            
                         }
                     }else if(notEnough){
                         addError(`Not enought ${guest} guest`);
@@ -251,16 +268,28 @@ export function booking(req,res,next) {
                         addError(`Too much ${minParentLimit.occupantType}s guest`);
                     }else{
                         addGuest(guest, occupantNum);
-                    } 
-                
-                    /* TODO: adding children { Algorithm distribute by room } */
-                    
+                    }         
                 break;
                 case roomOccupants[2]:
-                    if(Object.keys(resultBooking.booking.rooms).length < 1){
+                    if(needMultipleRooms){
+                        let remainGuestNum = occupantNum % maxLimit;
+                        if(remainGuestNum != 0){
+                            numOfBkRoom = occupantNum / maxLimit;
+                            Array.from({ length: numOfBkRoom }).map(() => {
+                                addGuest(guest, maxLimit);
+                            });
+                            addGuest(guest, remainGuestNum);
+                        }else{
+                            addGuest(guest, occupantNum);
+                        }
+                    }else if(notEnoughParent){
                         addError("Minor must be accompanied by one adult");
-                    }
-                break;
+                    }else if(tooMuchParent){
+                        addError(`Too much ${minParentLimit.occupantType}s guest`);
+                    }else{
+                        addGuest(guest, occupantNum);
+                    } 
+                    break;
                 default:
                 break;
             }
