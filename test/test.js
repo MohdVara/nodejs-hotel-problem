@@ -386,10 +386,44 @@ describe("Problem Statement Test Cases", () => {
     });
 });
 
-describe("Small Rule Engine Test Cases", () => {
-    describe("Inserting New Rules", () => {
-        it("Check if engine follows rule", () => {
+describe("Small Constraint Engine Test Cases", () => {
+    describe("Checking Current Rule", () => {
+        it("Check if application blocks empty request", () => {
+            req.body = {};
+            const request = mockReq(req);
+            const response = mockRes();
+            booking(request, response);
+            expect(response.json).to.be.calledWith({
+                error: ["Missing data from client"]
+            });
+        });
 
+        it("Check if application blocks incomplete request", () => {
+            req.body = {
+                "bookings":{
+                    
+                }
+            };
+            const request = mockReq(req);
+            const response = mockRes();
+            booking(request, response);
+            expect(response.json).to.be.calledWith({
+                error: ["Missing data from client"]
+            });
+        });
+        
+        it("Check if engine follows application ruleset", () => {
+            req.body = {
+                bookings: {
+                    ghost: 1,
+                }
+            };
+            const request = mockReq(req);
+            const response = mockRes();
+            booking(request, response);
+            expect(response.json).to.be.calledWith({
+                error: ["Ruleset defective"]
+            });
         });
     });
 });
