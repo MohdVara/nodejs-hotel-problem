@@ -356,6 +356,20 @@ describe("Problem Statement Test Cases", () => {
             });
         });
 
+        it("If 0 adults are booking (Not enough adult)", () => {
+            req.body = {
+                bookings: {
+                    adult: 0,
+                }
+            };
+            const request = mockReq(req);
+            const response = mockRes();
+            booking(request, response);
+            expect(response.json).to.be.calledWith({
+                error: ["Not enought adult guest"]
+            });
+        });
+
         it("If a child is booking (Unaccompanied Minor Error)", () => {
             req.body = {
                 bookings: {

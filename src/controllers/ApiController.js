@@ -37,121 +37,6 @@ const BOOK_LIMIT = {
 };
 
 /**
- * Implementation Booking Qualification Engine based on Simple Constraint Parser  
- * Function that checks for multiple booking conditions based on bookingConstraint
- *  1. Minimun amount of guest
- *  2. Maximum amount of guest
- *  3. Minimum amount of parent guest in booking
- *  4. Maximum amount of parent guest in booking 
- * @param {Number} occupantNum 
- * 
- * @param {Object} bookingConstraint - contains room occupancy limits as defined.
- * @param {Number} [bookingConstraint.minLimit] - Minimum amount of guest to book a room
- * @param {Number} [bookingConstraint.maxLimit] - Maximum amount of guest to book a room.
- * 
- * @param {Object} [bookingConstraint.minParentLimit] - Object that describe the parent for this type of guest and minimum requirement value.
- * @param {String} [bookingConstraint.minParentLimit.occupantType] - Type of guest. 
- * @param {String} [bookingConstraint.minParentLimit.value] - Number of this type of guest required.
- * 
- * @param {Object} [bookingConstraint.maxParentLimit] - Object that describe the parent for this type of guest and maximum requirement value.
- * @param {String} [bookingConstraint.maxParentLimit.occupantType] - Type of guest.
- * @param {String} [bookingConstraint.maxParentLimit.value] - Number of this type of guest required. 
- * 
- * @param {Object} resultBooking contains results to be sent to the API consumer.
- *  Example :
- *  If sucessful:  
- *      resultBooking {
- *          booking: {
- *              rooms: [
- *                 { adult: 3},
- *                 { adult: 3}
- *              ]
- *          } 
- *      }
- * If error:
- *     resultBooking {
- *          error: [
- *             "This is an example error message"
- *          ]
- *      }
- *  
- * 
- * @returns {Oject} checkConditionsResult 
- * @property {Boolean} checkConditionsResult.needMultipleRooms - true if booking requires multiple rooms
- * @property {Boolean} checkConditionsResult.notEnough - true if booking doesn't meet minimun guest requirement per room.
- * @property {Boolean} checkConditionsResult.tooMuch -  true if booking doesn't meet maximum guest requirement per room.
- * @property {Boolean} checkConditionsResult.notEnoughParent - true if booking doesn't meet minimum parent guest requirement in booking.,
- * @property {Boolean} checkConditionsResult.tooMuchParent - true if booking doesn't meet parent maximum guest requirement in booking., 
- *  
- */
-let checkConstraintForMultipleRooms = (occupantNum, {
-    minLimit,
-    maxLimit,
-    minParentLimit,
-    maxParentLimit,
-    resultBooking
-}) => {
-    let needMultipleRooms = false;
-    let checkParentConstraint = false;
-    let tooMuch = false;
-    let notEnough = false;
-    let tooMuchParent = false;
-    let notEnoughParent = false;
-    let totalParent = 0;
-
-    //Add parent amount to this total parent scope
-    let addParent = (num) => {
-        totalParent += num;
-    };
-    addParent.bind(this);
-
-    if (minLimit) {
-        notEnough = occupantNum < minLimit;
-    }
-
-    if (maxLimit) {
-        needMultipleRooms = needMultipleRooms || occupantNum >= maxLimit;
-    }
-
-    if (minParentLimit) {
-        if (resultBooking.booking !== undefined) {
-            if (resultBooking.booking.rooms.length > 0) {
-                totalParent = resultBooking.booking.rooms.reduce((prev, room) => {
-                    return prev + room[minParentLimit.occupantType];
-                }, 0);
-                addParent(totalParent);
-            }
-        }
-        if (totalParent <= minParentLimit.value) {
-            notEnoughParent = true;
-        }
-    }
-
-    if (maxParentLimit) {
-        if (resultBooking.booking.rooms !== undefined && resultBooking.booking.rooms.length > 0) {
-            totalParent = resultBooking.booking.rooms.reduce((prev, room) => {
-                return prev + room[maxParentLimit.occupantType];
-            }, 0);
-            addParent(totalParent);
-
-        }
-        if (totalParent >= maxParentLimit.value) {
-            tooMuchParent = true;
-        }
-    }
-
-
-
-    return {
-        needMultipleRooms,
-        notEnough,
-        tooMuch,
-        notEnoughParent,
-        tooMuchParent,
-    };
-};
-
-/**
  * Simple Constraint Parser Engine
  * This function intialize the required constraint into the function from a object rule set.
  * Only support of up to one level parent guest type but could be set for multiple parent guest type.
@@ -249,6 +134,126 @@ let initConstraint = (entity, operationDef, entityDefinition, ruleset) => {
     }
 
     return result;
+};
+
+
+/**
+ * Implementation Booking Qualification Engine based on Simple Constraint Parser  
+ * Function that checks for multiple booking conditions based on bookingConstraint
+ *  1. Minimun amount of guest
+ *  2. Maximum amount of guest
+ *  3. Minimum amount of parent guest in booking
+ *  4. Maximum amount of parent guest in booking 
+ * @param {Number} occupantNum 
+ * 
+ * @param {Object} bookingConstraint - contains room occupancy limits as defined.
+ * @param {Number} [bookingConstraint.minLimit] - Minimum amount of guest to book a room
+ * @param {Number} [bookingConstraint.maxLimit] - Maximum amount of guest to book a room.
+ * 
+ * @param {Object} [bookingConstraint.minParentLimit] - Object that describe the parent for this type of guest and minimum requirement value.
+ * @param {String} [bookingConstraint.minParentLimit.occupantType] - Type of guest. 
+ * @param {String} [bookingConstraint.minParentLimit.value] - Number of this type of guest required.
+ * 
+ * @param {Object} [bookingConstraint.maxParentLimit] - Object that describe the parent for this type of guest and maximum requirement value.
+ * @param {String} [bookingConstraint.maxParentLimit.occupantType] - Type of guest.
+ * @param {String} [bookingConstraint.maxParentLimit.value] - Number of this type of guest required. 
+ * 
+ * @param {Object} resultBooking contains results to be sent to the API consumer.
+ *  Example :
+ *  If sucessful:  
+ *      resultBooking {
+ *          booking: {
+ *              rooms: [
+ *                 { adult: 3},
+ *                 { adult: 3}
+ *              ]
+ *          } 
+ *      }
+ * If error:
+ *     resultBooking {
+ *          error: [
+ *             "This is an example error message"
+ *          ]
+ *      }
+ *  
+ * 
+ * @returns {Oject} checkConditionsResult 
+ * @property {Boolean} checkConditionsResult.needMultipleRooms - true if booking requires multiple rooms
+ * @property {Boolean} checkConditionsResult.notEnough - true if booking doesn't meet minimun guest requirement per room.
+ * @property {Boolean} checkConditionsResult.tooMuch -  true if booking doesn't meet maximum guest requirement per room.
+ * @property {Boolean} checkConditionsResult.notEnoughParent - true if booking doesn't meet minimum parent guest requirement in booking.,
+ * @property {Boolean} checkConditionsResult.tooMuchParent - true if booking doesn't meet parent maximum guest requirement in booking., 
+ *  
+ */
+let checkConstraintForMultipleRooms = (occupantNum, {
+    minLimit,
+    maxLimit,
+    minParentLimit,
+    maxParentLimit,
+    resultBooking
+}) => {
+    let needMultipleRooms = false;
+    let checkParentConstraint = false;
+    let tooMuch = false;
+    let notEnough = false;
+    let tooMuchParent = false;
+    let notEnoughParent = false;
+    let totalParent = 0;
+
+    //Add parent amount to this total parent scope
+    let addParent = (num) => {
+        totalParent += num;
+    };
+    addParent.bind(this);
+
+    if(occupantNum == 0){
+        notEnough = true;
+    }
+
+    if (minLimit) {
+        notEnough = occupantNum < minLimit;
+    }
+
+    if (maxLimit) {
+        needMultipleRooms = needMultipleRooms || occupantNum >= maxLimit;
+    }
+
+    if (minParentLimit) {
+        if (resultBooking.booking !== undefined) {
+            if (resultBooking.booking.rooms.length > 0) {
+                totalParent = resultBooking.booking.rooms.reduce((prev, room) => {
+                    return prev + room[minParentLimit.occupantType];
+                }, 0);
+                addParent(totalParent);
+            }
+        }
+        if (totalParent <= minParentLimit.value) {
+            notEnoughParent = true;
+        }
+    }
+
+    if (maxParentLimit) {
+        if (resultBooking.booking.rooms !== undefined && resultBooking.booking.rooms.length > 0) {
+            totalParent = resultBooking.booking.rooms.reduce((prev, room) => {
+                return prev + room[maxParentLimit.occupantType];
+            }, 0);
+            addParent(totalParent);
+
+        }
+        if (totalParent >= maxParentLimit.value) {
+            tooMuchParent = true;
+        }
+    }
+
+
+
+    return {
+        needMultipleRooms,
+        notEnough,
+        tooMuch,
+        notEnoughParent,
+        tooMuchParent,
+    };
 };
 
 /**
@@ -418,6 +423,9 @@ export function booking(req, res, next) {
                                     });
                                     i++;
                                 } while (i <= numOfBkRoom);
+                            } else if(occupantNum === 0){
+                                addError("Missing data from client");
+                                return res.json(resultBooking);
                             } else {
                                 addRoom({
                                     [guest]: occupantNum
