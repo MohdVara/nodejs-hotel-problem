@@ -1,13 +1,195 @@
 <html>
 
 <head>
-  <title>Express</title>
+  <title>Simple Api Tester</title>
   <link rel="stylesheet" href="/stylesheets/style.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 
 <body>
-  <h1>Express</h1>
-  <p>Testing Express</p>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12 col-md-12">
+        <h1>Hotel Problem</h1>
+        To get the mapping result click submit.<br>
+        To make a new query just change any values that are in form.
+        <br><br>
+      </div>
+
+      <div class="card col-lg-6 col-md-6 col-sm-6">
+        <br>
+        <form>
+          <div class="form-group">
+            <label>Adult :</label>
+            <select class="form-control" name="adult">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+              <option value="0">0</option>
+            </select>
+          </div>
+          <br>
+          <div class="form-group">
+            <label>Children :</label>
+            <select class="form-control" name="children">
+              <option value="0">0</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+          </div>
+          <br>
+          <div class="form-group">
+            <label>Infant :</label>
+            <select class="form-control" name="infant">
+              <option value="0">0</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+          </div>
+          <button onclick="submitForm()" type="submit" class="btn btn-primary">Submit</button>
+        </form>
+      </div>
+
+      <div id="result" class="col-lg-6 col-md-6 col-sm-6">
+        Results here
+      </div>
+    </div>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.4.0.min.js"
+    integrity="sha256-BJeo0qm959uMBGb65z40ejJYGSgR7REI4+CW1fNKwOg=" crossorigin="anonymous"></script>
+  </script>
+  <script>
+    console.log("Checked");
+    $(function () {
+      $("form").submit(function (e) {
+        e.preventDefault();
+      });
+
+    });
+
+    var current = {
+      adult: 0,
+      children: 0,
+      infant: 0
+    }
+
+    var editCurrent = function (name, value) {
+      current[name] = value;
+    }
+    editCurrent = editCurrent.bind(this);
+
+    $("select[name=adult]").on('change', function () {
+      if ($(this).val() == current.adult) {
+
+      } else {
+        $("#result").html("Results here");
+      }
+    });
+
+    $("select[name=children]").on('change', function () {
+      if ($(this).val() == current.children) {
+
+      } else {
+        $("#result").html("Results here");
+      }
+    });
+
+    $("select[name=infant]").on('change', function () {
+      if ($(this).val() == current.infant) {
+
+      } else {
+        $("#result").html("Results here");
+      }
+    });
+
+
+    var submitForm = function () {
+
+      editCurrent("adult", $("select[name=adult]").val());
+      editCurrent("children", $("select[name=children]").val());
+      editCurrent("infant", $("select[name=infant]").val());
+
+      var bookingData = {
+        bookings: {
+          adult: current.adult,
+          children: current.children,
+          infant: current.infant,
+        }
+      }
+
+
+      var receiveData = function (data) {
+        console.log("Data received" + JSON.stringify(data));
+        if (data.error != undefined) {
+          $("#result").html("<font color='red'><h5>Error returned: <br></h5><p color='red'>" + data.error[0] +
+            "</p></font>");
+        } else if (data.booking) {
+          var newHTML = "";
+
+          var i = 0;
+          var rooms = data.booking.rooms;
+          for (index in rooms) {
+            i++;
+            console.log(rooms[index].adult);
+            var html = "<h4>Room " + i + "#</h4>";
+            if (rooms[index].adult != undefined) {
+              html += "Adult: " + rooms[index].adult + " guest <br>";
+            }
+            if (rooms[index].children != undefined && rooms[index].children != 0) {
+              html += "Children: " + rooms[index].children + " guest <br>";
+            }
+
+            if (rooms[index].infant != undefined && rooms[index].infant != 0) {
+              html += "Infant: " + rooms[index].infant + " guest <br>";
+            }
+            html += "<br>";
+            newHTML += html;
+          }
+          $("#result").html(newHTML);
+
+        }
+      }
+
+      $.ajax({
+        type: "POST",
+        contentType: "application/json",
+        url: "api/booking",
+        data: JSON.stringify(bookingData),
+        success: receiveData,
+        dataType: "json"
+      });
+    };
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+    integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
+  </script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
+  </script>
 </body>
 
 </html>

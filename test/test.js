@@ -13,7 +13,7 @@ import {
 
 chai.use(sinonChai);
 
-let res,req = {};
+let res, req = {};
 
 describe("Initial suite test", () => {
 
@@ -414,8 +414,8 @@ describe("Small Constraint Engine Test Cases", () => {
 
         it("Check if application blocks incomplete request", () => {
             req.body = {
-                "bookings":{
-                    
+                "bookings": {
+
                 }
             };
             const request = mockReq(req);
@@ -425,7 +425,7 @@ describe("Small Constraint Engine Test Cases", () => {
                 error: ["Missing data from client"]
             });
         });
-        
+
         it("Check if engine follows application ruleset", () => {
             req.body = {
                 bookings: {

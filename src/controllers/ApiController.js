@@ -206,7 +206,7 @@ let checkConstraintForMultipleRooms = (occupantNum, {
     };
     addParent.bind(this);
 
-    if(occupantNum == 0){
+    if (occupantNum == 0) {
         notEnough = true;
     }
 
@@ -423,7 +423,7 @@ export function booking(req, res, next) {
                                     });
                                     i++;
                                 } while (i <= numOfBkRoom);
-                            } else if(occupantNum === 0){
+                            } else if (occupantNum === 0) {
                                 addError("Missing data from client");
                                 return res.json(resultBooking);
                             } else {
