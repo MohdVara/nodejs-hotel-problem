@@ -265,7 +265,7 @@ export function checkLink(req, res, next) {
 export function booking(req, res, next) {
 
     let resultBooking = {};
-    let totalGuest= 0;
+    let totalGuest = 0;
     /** Function to intialize response to return rooms map */
     let initRoom = () => {
         resultBooking = {
@@ -277,7 +277,7 @@ export function booking(req, res, next) {
 
     let addTotalGuest = (num) => {
         totalGuest += num;
-    }
+    };
 
     let resetRoom = () => {
         resultBooking = {};
@@ -344,13 +344,13 @@ export function booking(req, res, next) {
         }
 
         /** Count the number of guest excluding babies */
-        for (var guest in bookings){
+        for (var guest in bookings) {
             if (bookings.hasOwnProperty(guest) && guest != "infant") {
                 addTotalGuest(parseInt(bookings[guest]));
             }
         }
 
-        if(totalGuest > BOOK_LIMIT2){
+        if (totalGuest > BOOK_LIMIT2) {
             addError("Too many guests");
             return res.json(resultBooking);
         }
@@ -416,7 +416,7 @@ export function booking(req, res, next) {
                          * and return remaining to the last room.
                          */
                         if (remainGuestNum != 0) {
-                            
+
                             var i = 1;
                             var excludeLastRoom = numOfBkRoom - 1;
                             do {
@@ -452,7 +452,7 @@ export function booking(req, res, next) {
                     } else if (notEnough) {
                         addError(`Not enough ${guest} guest`);
                         return res.json(resultBooking);
-                    } else if (occupantNum == 0){
+                    } else if (occupantNum == 0) {
                         addError("Invalid data");
                         return res.json(resultBooking);
                     } else if (tooMuch) {
@@ -466,7 +466,7 @@ export function booking(req, res, next) {
                         return res.json(resultBooking);
 
                         /** default is to add everyone into the room */
-                    } else if (isNaN(occupantNum)){
+                    } else if (isNaN(occupantNum)) {
                         addError("Bad data");
                         return res.json(resultBooking);
                     } else {
@@ -479,35 +479,39 @@ export function booking(req, res, next) {
                     /** Check for children */
                 case ROOM_OCCUPANTS[1]:
                     let additionalRoom = 0;
-                
+
                     if (needMultipleRooms && occupantNum > 0) {
                         numOfBkRoom = Math.ceil(occupantNum / maxLimit);
-                        
+
                         /**
                          * The statement encompassed inside the "if" below is to check whether to update the current
                          * rooms mapping or not. If yes update else leave it as it is.
                          */
-                        if(numOfBkRoom > resultBooking.booking.rooms.length){
+                        if (numOfBkRoom > resultBooking.booking.rooms.length) {
                             additionalRoom = numOfBkRoom - resultBooking.booking.rooms.length;
-                            if(totalParent >= numOfBkRoom * minParentLimit.value){
-                                if(totalParent == numOfBkRoom * minParentLimit.value){
+                            if (totalParent >= numOfBkRoom * minParentLimit.value) {
+                                if (totalParent == numOfBkRoom * minParentLimit.value) {
                                     var i = 1;
                                     resetRoom();
                                     do {
-                                        addRoom({[minParentLimit.entityType]: minParentLimit.value});
+                                        addRoom({
+                                            [minParentLimit.entityType]: minParentLimit.value
+                                        });
                                         i++;
                                     } while (i <= numOfBkRoom);
-                                }else{
+                                } else {
                                     let firstRoomParentAmount = checkGuestFirstRoom(minParentLimit.entityType);
                                     let realFirstRoomParentAmount = firstRoomParentAmount - additionalRoom * minParentLimit.value;
-                                    addGuest(minParentLimit.entityType,Math.ceil(realFirstRoomParentAmount),0);
+                                    addGuest(minParentLimit.entityType, Math.ceil(realFirstRoomParentAmount), 0);
                                     var i = 1;
                                     do {
-                                        addRoom({[minParentLimit.entityType]: minParentLimit.value});
+                                        addRoom({
+                                            [minParentLimit.entityType]: minParentLimit.value
+                                        });
                                         i++;
                                     } while (i <= additionalRoom);
                                 }
-                            }else{
+                            } else {
                                 addError(`Not enough ${minParentLimit.entityType} guest`);
                                 return res.json(resultBooking);
                             }
@@ -523,7 +527,7 @@ export function booking(req, res, next) {
                         if (remainGuestNum != 0) {
                             var i = 1;
                             do {
-                                addGuest(guest, maxLimit, i-1);
+                                addGuest(guest, maxLimit, i - 1);
                                 i++;
                             } while (i <= excludingFirstRoomOfBkRoom);
                             addGuest(guest, remainGuestNum, excludingFirstRoomOfBkRoom);
@@ -531,7 +535,7 @@ export function booking(req, res, next) {
                             if (occupantNum >= maxLimit) {
                                 var i = 1;
                                 do {
-                                    addGuest(guest, maxLimit, i-1);
+                                    addGuest(guest, maxLimit, i - 1);
                                     i++;
                                 } while (i <= numOfBkRoom);
                             } else if (occupantNum === 0) {
@@ -543,7 +547,7 @@ export function booking(req, res, next) {
                         }
 
                         /** Explained at the Booking Qualification Engine at line 77*/
-                    } else if (occupantNum == 0){
+                    } else if (occupantNum == 0) {
                         addError("Invalid data");
                         return res.json(resultBooking);
                     } else if (notEnoughParent) {
@@ -554,12 +558,12 @@ export function booking(req, res, next) {
 
                         addError(`Too much ${minParentLimit.occupantType}s guest`);
                         return res.json(resultBooking);
-                    } else if (isNaN(occupantNum)){
+                    } else if (isNaN(occupantNum)) {
                         addError("Bad data");
                         return res.json(resultBooking);
                         /** default is to add everyone into the room */
                     } else {
-                        addGuest(guest, occupantNum,0);
+                        addGuest(guest, occupantNum, 0);
                     }
                     break;
                 case ROOM_OCCUPANTS[2]:
@@ -567,39 +571,43 @@ export function booking(req, res, next) {
                     additionalRoom = 0;
 
                     /**
-                    * The statement encompassed inside the "if" below is to check whether to update the current
-                    * rooms mapping or not. If yes update else leave it as it is.
-                    */
+                     * The statement encompassed inside the "if" below is to check whether to update the current
+                     * rooms mapping or not. If yes update else leave it as it is.
+                     */
                     if (needMultipleRooms && occupantNum > 0) {
                         numOfBkRoom = Math.ceil(occupantNum / maxLimit);
-                       
-                        if(numOfBkRoom > resultBooking.booking.rooms.length){
+
+                        if (numOfBkRoom > resultBooking.booking.rooms.length) {
                             additionalRoom = numOfBkRoom - resultBooking.booking.rooms.length;
-                            if(totalParent >= numOfBkRoom * minParentLimit.value){
-                                if(totalParent == numOfBkRoom * minParentLimit.value){
+                            if (totalParent >= numOfBkRoom * minParentLimit.value) {
+                                if (totalParent == numOfBkRoom * minParentLimit.value) {
                                     var i = 1;
                                     resetRoom();
                                     do {
-                                        addRoom({[minParentLimit.entityType]: minParentLimit.value});
+                                        addRoom({
+                                            [minParentLimit.entityType]: minParentLimit.value
+                                        });
                                         i++;
                                     } while (i <= numOfBkRoom);
-                                }else{
+                                } else {
                                     let firstRoomParentAmount = checkGuestFirstRoom(minParentLimit.entityType);
                                     let realFirstRoomParentAmount = firstRoomParentAmount - additionalRoom * minParentLimit.value;
-                                    addGuest(minParentLimit.entityType,Math.ceil(realFirstRoomParentAmount),0);
+                                    addGuest(minParentLimit.entityType, Math.ceil(realFirstRoomParentAmount), 0);
                                     var i = 1;
                                     do {
-                                        addRoom({[minParentLimit.entityType]: minParentLimit.value});
+                                        addRoom({
+                                            [minParentLimit.entityType]: minParentLimit.value
+                                        });
                                         i++;
                                     } while (i <= additionalRoom);
                                 }
-                            }else{
+                            } else {
                                 addError(`Not enough ${minParentLimit.entityType} guest`);
                                 return res.json(resultBooking);
                             }
                         }
 
-                         /** 
+                        /** 
                          * COMMENT: similar process to adults but they could only be
                          *  added to rooms not book a new.
                          */
@@ -609,7 +617,7 @@ export function booking(req, res, next) {
                             numOfBkRoom = occupantNum / maxLimit;
                             var i = 1;
                             do {
-                                addGuest(guest, maxLimit, i-1);
+                                addGuest(guest, maxLimit, i - 1);
                                 i++;
                             } while (i <= numOfBkRoom - 1);
                             addGuest(guest, remainGuestNum, excludingFirstRoomOfBkRoom);
@@ -618,7 +626,7 @@ export function booking(req, res, next) {
                                 numOfBkRoom = occupantNum / maxLimit;
                                 var i = 1;
                                 do {
-                                    addGuest(guest, maxLimit, i-1);
+                                    addGuest(guest, maxLimit, i - 1);
                                     i++;
                                 } while (i <= numOfBkRoom);
                             } else if (occupantNum === 0) {
@@ -630,7 +638,7 @@ export function booking(req, res, next) {
                         }
 
                         /** Explained at the Booking Qualification Engine at line 77*/
-                    } else if (occupantNum == 0){
+                    } else if (occupantNum == 0) {
                         addError(["Invalid data"]);
                         return res.json(resultBooking);
                     } else if (notEnoughParent) {
@@ -639,7 +647,7 @@ export function booking(req, res, next) {
                     } else if (tooMuchParent) {
                         addError(`Too much ${minParentLimit.occupantType}s guest`);
                         return res.json(resultBooking);
-                    } else if (isNaN(occupantNum)){
+                    } else if (isNaN(occupantNum)) {
                         addError("Bad data");
                         return res.json(resultBooking);
                         /** default is to add everyone into the room */
