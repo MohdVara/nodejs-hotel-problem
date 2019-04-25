@@ -263,31 +263,6 @@ describe("Problem Statement Test Cases", () => {
         });
 
         describe("Test With Adults,Children and Infants", () => {
-            it("If 6 adults, 2 children and 4 infant are booking", () => {
-                req.body = {
-                    bookings: {
-                        adult: 6,
-                        children: 2,
-                        infant: 4,
-                    }
-                };
-                const request = mockReq(req);
-                const response = mockRes();
-                booking(request, response);
-                expect(response.json).to.be.calledWith({
-                    booking: {
-                        rooms: [{
-                                adult: 3,
-                                children: 2,
-                                infant: 4
-                            },
-                            {
-                                adult: 3
-                            },
-                        ]
-                    }
-                });
-            });
 
             it("If 4 adults,3 child and 3 infants are booking", () => {
                 req.body = {
@@ -352,7 +327,7 @@ describe("Problem Statement Test Cases", () => {
             const response = mockRes();
             booking(request, response);
             expect(response.json).to.be.calledWith({
-                error: ["Exceed limit of 7 adults per booking"]
+                error: ["Too many guests"]
             });
         });
 
@@ -366,7 +341,66 @@ describe("Problem Statement Test Cases", () => {
             const response = mockRes();
             booking(request, response);
             expect(response.json).to.be.calledWith({
-                error: ["Not enought adult guest"]
+                error: ["Invalid data"]
+            });
+        });
+
+        it("If 0 children are booking (Not enough adult)", () => {
+            req.body = {
+                bookings: {
+                    children: 0,
+                }
+            };
+            const request = mockReq(req);
+            const response = mockRes();
+            booking(request, response);
+            expect(response.json).to.be.calledWith({
+                error: ["Invalid data"]
+            });
+        });
+
+        it("If 0 infant are booking (Not enough adult)", () => {
+            req.body = {
+                bookings: {
+                    children: 0,
+                }
+            };
+            const request = mockReq(req);
+            const response = mockRes();
+            booking(request, response);
+            expect(response.json).to.be.calledWith({
+                error: ["Invalid data"]
+            });
+        });
+
+        it("If 6 adults, 2 children and 4 infant are booking (Overcapacity Error)", () => {
+            req.body = {
+                bookings: {
+                    adult: 6,
+                    children: 2,
+                    infant: 4,
+                }
+            };
+            const request = mockReq(req);
+            const response = mockRes();
+            booking(request, response);
+            expect(response.json).to.be.calledWith({
+                error: ["Too many guests"]
+            });
+        });
+        
+        it("If 1 adults and 6 children are  booking (Not enough adult)", () => {
+            req.body = {
+                bookings: {
+                    adult: 1,
+                    children: 6,
+                }
+            };
+            const request = mockReq(req);
+            const response = mockRes();
+            booking(request, response);
+            expect(response.json).to.be.calledWith({
+                error: ["Not enough adult guest"]
             });
         });
 
@@ -423,6 +457,20 @@ describe("Small Constraint Engine Test Cases", () => {
             booking(request, response);
             expect(response.json).to.be.calledWith({
                 error: ["Missing data from client"]
+            });
+        });
+
+        it("Check for valid datatypes", () => {
+            req.body = {
+                "bookings": {
+                    "adult": "test"
+                }
+            };
+            const request = mockReq(req);
+            const response = mockRes();
+            booking(request, response);
+            expect(response.json).to.be.calledWith({
+                error: ["Bad data"]
             });
         });
 

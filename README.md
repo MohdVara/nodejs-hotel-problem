@@ -112,11 +112,15 @@ It should show that all test passed as shown below:
         √ If 4 adults with 3 infant are booking
         √ If 3 adults with 2 infant are booking
       Test With Adults,Children and Infants
-        √ If 6 adults, 2 children and 4 infant are booking
         √ If 4 adults,3 child and 3 infants are booking
         √ If 3 adults, 1 child and  2 infants are booking
     Booking For Rooms (Returns Error)
       √ If 8 adults are booking (Overcapacity Error)
+      √ If 0 adults are booking (Not enough adult)
+      √ If 0 children are booking (Not enough adult)
+      √ If 0 infant are booking (Not enough adult)
+      √ If 6 adults, 2 children and 4 infant are booking (Overcapacity Error)
+      √ If 1 adults and 6 children are  booking (Not enough adult)
       √ If a child is booking (Unaccompanied Minor Error)
       √ If an infant is booking (Unaccompanied Minor Error)
 
@@ -124,10 +128,11 @@ It should show that all test passed as shown below:
     Checking Current Rule
       √ Check if application blocks empty request
       √ Check if application blocks incomplete request
+      √ Check for valid datatypes
       √ Check if engine follows application ruleset
 
 
-  20 passing (298ms)
+  25 passing (283ms)
 ```
 
 ### Break down into end to end tests
