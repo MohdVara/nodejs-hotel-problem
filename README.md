@@ -36,6 +36,11 @@ Once the dependencies are installed run the following command:
 ```
 npm run-script prod
 ```
+You should see this page when it's loaded correctly.
+<img src="https://i.imgur.com/7DqyKtY.png"
+     alt="Hotel Problem front-end"
+     style="float: left; margin-right: 10px;" />
+
 This will build and run the server in production mode.
 
 To test whether the endpoints are setup correctly. Using you browser enter
