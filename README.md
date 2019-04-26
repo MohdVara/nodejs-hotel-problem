@@ -159,10 +159,6 @@ I decided to add a simple constraint parser engine for future reusability for so
 * [Mocha](https://mochajs.org/) - Simple, flexible, fun test framework
 * [Chai Assertion Library](https://www.chaijs.com/) - BDD / TDD assertion library for node and the browser that can be delightfully paired with any javascript testing framework.
 
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
 ## Versioning
 
 We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com//tags). 
