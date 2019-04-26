@@ -9,10 +9,10 @@ run the commands.
 <br>
 ### Prerequisites
 
-####General dependencies
+#### General dependencies
 It's paramount to have npm installed in your computer.
 
-####Windows
+#### Windows
 Make sure you have "win-node-env" installed for the command available
 in JSON
 
@@ -30,7 +30,7 @@ the application :
 npm install
 ```
 <br>
-###Demonstration
+### Demonstration
 Once the dependencies are installed run the following command:
 
 ```
